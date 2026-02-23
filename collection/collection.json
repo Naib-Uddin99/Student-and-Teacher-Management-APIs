@@ -1,0 +1,582 @@
+{
+  "info": {
+    "_postman_id": "47108d65-ae60-42f7-af71-6eb80aec35a4",
+    "name": "Student and Teacher Management APIs",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "38863803",
+    "_collection_link": "https://go.postman.co/collection/38863803-47108d65-ae60-42f7-af71-6eb80aec35a4?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "let jsonData = pm.response.json()\r",
+              "let token = jsonData.authToken\r",
+              "pm.collectionVariables.set(\"token\", token)\r",
+              "pm.environment.set(\"token\",token);\r",
+              "\r",
+              "// Expected_Age = \"26\"\r",
+              "// Actual_Age = \"25\"\r",
+              "\r",
+              "// pm.test(\"Practice\", function(){\r",
+              "//     pm.expect(Actual_Age, \"It's not same\").to.be.equal(Expected_Age);\r",
+              "\r",
+              "// })"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"username\": \"admin\",\r\n  \"password\": \"password123\"\r\n}\r\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}:5171/login",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "port": "5171",
+          "path": [
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Students Raw Schema Validation",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code will be 200\", function(){\r",
+              "    pm.response.to.have.status(200);\r",
+              "})\r",
+              "\r",
+              "// Schema Validation\r",
+              "pm.test(\"Schema Validation from student list\", function(){\r",
+              "    const responseJson = pm.response.json();\r",
+              "\r",
+              "    pm.expect(responseJson).to.be.an(\"array\");\r",
+              "\r",
+              "    const expectedStudentSchema = {\r",
+              "        \"_id\": \"string\",\r",
+              "        \"name\": \"string\",\r",
+              "        \"email\": \"string\",\r",
+              "        \"department\": \"string\",\r",
+              "        \"registrationId\": \"number\",\r",
+              "        \"age\": \"number\"\r",
+              "    }\r",
+              "\r",
+              "    responseJson.forEach((student,index)=>{\r",
+              "        for (let key in expectedStudentSchema){\r",
+              "            pm.expect(student, 'Missing field').to.have.property(key);\r",
+              "\r",
+              "            pm.expect(typeof student[key], 'Invalid type').to.equal(expectedStudentSchema[key])\r",
+              "        }\r",
+              "\r",
+              "    })\r",
+              "\r",
+              "})"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseURL}}:5171/api/student",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "port": "5171",
+          "path": [
+            "api",
+            "student"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Students tv4 Schema Validation",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Validate schema from student list response using tv4\", function(){\r",
+              "    const responseJson = pm.response.json();\r",
+              "\r",
+              "    pm.expect(responseJson).to.be.an(\"array\");\r",
+              "\r",
+              "    const expectedStudentSchema = {\r",
+              "        type: \"object\",\r",
+              "        required: [\"_id\", \"name\", \"email\", \"department\", \"registrationId\", \"age\"],\r",
+              "        properties:{\r",
+              "            _id: {type: \"string\"},\r",
+              "            name: {type: \"string\"},\r",
+              "            email: {type: \"string\"},\r",
+              "            department: {type: \"string\"},\r",
+              "            registrationId: {type: \"integer\"},\r",
+              "            age: {type: \"integer\"}\r",
+              "        }\r",
+              "    };\r",
+              "\r",
+              "    responseJson.forEach((student,index) => {\r",
+              "        const isValid = tv4.validate(student, expectedStudentSchema);\r",
+              "        pm.expect(isValid, 'Schema mismatch').to.be.true;\r",
+              "\r",
+              "    });\r",
+              "\r",
+              "})"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseURL}}:5171/api/student",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "port": "5171",
+          "path": [
+            "api",
+            "student"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Student Request vs Response",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "let requestBody = JSON.parse(pm.request.body.raw);\r",
+              "\r",
+              "let resBody = pm.response.json();\r",
+              "\r",
+              "pm.test(\"Status code will be 201\", function(){\r",
+              "    pm.response.to.have.status(201);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Response Name Matches Request Name\", function(){\r",
+              "    pm.expect(resBody.name).to.eql(requestBody.name);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Response Email Matches Request Email\", function(){\r",
+              "    pm.expect(resBody.email).to.eql(requestBody.email);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Response Department Matches Request Department\", function(){\r",
+              "    pm.expect(resBody.department).to.eql(requestBody.department);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Response Registration ID Matches Request Registration ID\", function(){\r",
+              "    pm.expect(resBody.registrationID).to.eql(requestBody.registrationID);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Response Age Matches Request Age\", function(){\r",
+              "    pm.expect(resBody.age).to.eql(requestBody.age);\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "let registrationId = Math.floor(Math.random()*10000);\r",
+              "console.log(registrationId)\r",
+              "pm.collectionVariables.set(\"Registration ID\", registrationId)"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"Test {{$randomFirstName}}\",\r\n  \"email\": \"{{$randomEmail}}\",\r\n  \"department\": \"CSE\",\r\n  \"registrationId\": {{Registration ID}},\r\n  \"age\": 25\r\n}\r\n\r\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}:5171/api/student",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "port": "5171",
+          "path": [
+            "api",
+            "student"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Student validate without required field",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Studnet Creation fails for missing Email (Required Field)\", function(){\r",
+              "    pm.expect(pm.response.code).to.be.oneOf([400,422]);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Proper Error Message Validation for Email\", function(){\r",
+              "    const res = pm.response.json();\r",
+              "    let actualErrorMessage = res.error;\r",
+              "    let expectedErrorMessage = 'Email is required';\r",
+              "    console.log(actualErrorMessage);\r",
+              "    pm.expect(expectedErrorMessage).equal(actualErrorMessage)\r",
+              "\r",
+              "})"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "let registrationId = Math.floor(Math.random()*10000);\r",
+              "console.log(registrationId)\r",
+              "pm.collectionVariables.set(\"Registration ID\", registrationId)"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"Test {{$randomFirstName}}\",\r\n  \"department\": \"CSE\",\r\n  \"registrationId\": {{Registration ID}},\r\n  \"age\": 25\r\n}\r\n\r\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://54.255.195.111:5171/api/student",
+          "protocol": "http",
+          "host": [
+            "54",
+            "255",
+            "195",
+            "111"
+          ],
+          "port": "5171",
+          "path": [
+            "api",
+            "student"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Student validate with required fields",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Response has correct properties\", function(){\r",
+              "    const res = pm.response.json();\r",
+              "\r",
+              "    pm.expect(res).to.have.property(\"name\");\r",
+              "    pm.expect(res).to.have.property(\"email\");\r",
+              "    pm.expect(res).to.have.property(\"department\");\r",
+              "    pm.expect(res).to.have.property(\"registrationId\");\r",
+              "    pm.expect(res).to.have.property(\"age\");\r",
+              "    pm.expect(res).to.have.property(\"_id\")\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "let registrationId = Math.floor(Math.random()*10000);\r",
+              "console.log(registrationId)\r",
+              "pm.collectionVariables.set(\"Registration ID\", registrationId)"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"Test {{$randomFirstName}}\",\r\n  \"email\": \"{{$randomEmail}}\",\r\n  \"department\": \"CSE\",\r\n  \"registrationId\": {{Registration ID}},\r\n  \"age\": 25\r\n}\r\n\r\n",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{baseURL}}:5171/api/student",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "port": "5171",
+          "path": [
+            "api",
+            "student"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get students and store random student name",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "let response = pm.response.json();\r",
+              "\r",
+              "let randomIndex = Math.floor(Math.random()*response.length);\r",
+              "\r",
+              "let randomStudent = response[randomIndex];\r",
+              "\r",
+              "pm.collectionVariables.set(\"studentName\", randomStudent.name);\r",
+              "pm.collectionVariables.set(\"studentEmail\", randomStudent.email);\r",
+              "pm.collectionVariables.set(\"studentDepartment\", randomStudent.department);\r",
+              "pm.collectionVariables.set(\"studentRegistrationId\", randomStudent.registrationId);\r",
+              "pm.collectionVariables.set(\"studentAge\", randomStudent.age);\r",
+              "\r",
+              "console.log(\"Randomly Selected Student\", randomStudent);"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseURL}}:5171/api/student",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "port": "5171",
+          "path": [
+            "api",
+            "student"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get student Name Filter",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "let response = pm.response.json();\r",
+              "let expectedName = pm.collectionVariables.get(\"studentName\");\r",
+              "\r",
+              "\r",
+              "pm.test(\"Response contains only students matching searched name\", function(){\r",
+              "    response.forEach(function(student){\r",
+              "        pm.expect(student.name.toLowerCase()).to.eql(expectedName.toLowerCase());\r",
+              "\r",
+              "    })\r",
+              "\r",
+              "})"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseURL}}:5171/api/student?name={{studentName}}",
+          "host": [
+            "{{baseURL}}"
+          ],
+          "port": "5171",
+          "path": [
+            "api",
+            "student"
+          ],
+          "query": [
+            {
+              "key": "name",
+              "value": "{{studentName}}"
+            }
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "token",
+      "value": "{{vault:json-web-token}}"
+    },
+    {
+      "key": "Registration ID",
+      "value": 5587
+    },
+    {
+      "key": "studentName",
+      "value": "Test Cecile"
+    },
+    {
+      "key": "studentEmail",
+      "value": "Jordon_Medhurst94@gmail.com"
+    },
+    {
+      "key": "studentDepartment",
+      "value": "CSE"
+    },
+    {
+      "key": "studentRegistrationId",
+      "value": 9862
+    },
+    {
+      "key": "studentAge",
+      "value": 26
+    },
+    {
+      "key": "baseURL",
+      "value": "http://54.255.195.111"
+    }
+  ]
+}
